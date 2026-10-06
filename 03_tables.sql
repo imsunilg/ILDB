@@ -1,0 +1,2 @@
+-- Tables (master prompt sections 5, 16)
+-- PENDING: content comes from the master implementation prompt. Must be idempotent.

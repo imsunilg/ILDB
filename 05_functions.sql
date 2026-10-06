@@ -1,0 +1,2 @@
+-- Functions (section 18)
+-- PENDING: content comes from the master implementation prompt. Must be idempotent.
