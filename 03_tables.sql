@@ -2,11 +2,37 @@
 CREATE TABLE IF NOT EXISTS auth.users (
   id            uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   email         citext NOT NULL UNIQUE,
+  username      citext,
   password_hash text   NOT NULL,
   full_name     text   NOT NULL,
-  role          text   NOT NULL DEFAULT 'customer' CHECK (role IN ('customer','agent','admin')),
   is_active     boolean NOT NULL DEFAULT true,
   created_at    timestamptz NOT NULL DEFAULT now()
+);
+-- upgrade path for databases created before usernames/roles tables existed
+ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS username citext;
+UPDATE auth.users SET username = email WHERE username IS NULL;
+ALTER TABLE auth.users ALTER COLUMN username SET NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_users_username ON auth.users(username);
+
+CREATE TABLE IF NOT EXISTS auth.roles (
+  id   serial PRIMARY KEY,
+  code text NOT NULL UNIQUE,
+  name text NOT NULL
+);
+CREATE TABLE IF NOT EXISTS auth.permissions (
+  id          serial PRIMARY KEY,
+  code        text NOT NULL UNIQUE,
+  description text NOT NULL
+);
+CREATE TABLE IF NOT EXISTS auth.user_roles (
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  role_id int  NOT NULL REFERENCES auth.roles(id),
+  PRIMARY KEY (user_id, role_id)
+);
+CREATE TABLE IF NOT EXISTS auth.role_permissions (
+  role_id       int NOT NULL REFERENCES auth.roles(id) ON DELETE CASCADE,
+  permission_id int NOT NULL REFERENCES auth.permissions(id) ON DELETE CASCADE,
+  PRIMARY KEY (role_id, permission_id)
 );
 CREATE TABLE IF NOT EXISTS auth.refresh_tokens (
   id         uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
