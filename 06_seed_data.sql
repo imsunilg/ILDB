@@ -1,4 +1,4 @@
-INSERT INTO product.products(code,name,description,base_rate) VALUES
+﻿INSERT INTO product.products(code,name,description,base_rate) VALUES
  ('MOTOR','Motor Insurance','Cover for cars and light vehicles',0.0350),
  ('HOME','Home Insurance','Buildings and contents cover',0.0012),
  ('TRAVEL','Travel Insurance','Single-trip travel cover',0.0400),
@@ -33,7 +33,7 @@ ON CONFLICT (code) DO NOTHING;
 INSERT INTO auth.role_permissions(role_id, permission_id)
 SELECT r.id, p.id FROM (VALUES
  ('ADMIN','dashboard.view'),('ADMIN','motor.quote'),('ADMIN','home.quote'),('ADMIN','travel.quote'),('ADMIN','liability.quote'),
- ('ADMIN','customers.view'),('ADMIN','quotes.view'),('ADMIN','users.manage'),('ADMIN','roles.manage'),('ADMIN','reports.view'),('ADMIN','underwriting.view'),
+ ('ADMIN','customers.view'),('ADMIN','quotes.view'),('ADMIN','users.manage'),('ADMIN','roles.manage'),('ADMIN','reports.view'),
  ('AGENT','dashboard.view'),('AGENT','motor.quote'),('AGENT','home.quote'),('AGENT','travel.quote'),('AGENT','liability.quote'),
  ('AGENT','customers.view'),('AGENT','quotes.view'),
  ('UNDERWRITER','dashboard.view'),('UNDERWRITER','quotes.view'),('UNDERWRITER','underwriting.view'),('UNDERWRITER','reports.view'),
@@ -44,6 +44,10 @@ SELECT r.id, p.id FROM (VALUES
 ) m(role_code, perm_code)
 JOIN auth.roles r ON r.code = m.role_code JOIN auth.permissions p ON p.code = m.perm_code
 ON CONFLICT DO NOTHING;
+
+-- cleanup: ADMIN no longer has the underwriting menu (earlier seed granted it)
+DELETE FROM auth.role_permissions WHERE role_id = (SELECT id FROM auth.roles WHERE code='ADMIN')
+  AND permission_id = (SELECT id FROM auth.permissions WHERE code='underwriting.view');
 
 -- upgrade path: move the old auth.users.role column into auth.user_roles
 DO $$
@@ -56,3 +60,4 @@ BEGIN
     ALTER TABLE auth.users DROP COLUMN role;
   END IF;
 END $$;
+
