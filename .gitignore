@@ -7,3 +7,6 @@
 .DS_Store
 Thumbs.db
 .idea/
+
+# exported user rows contain password hashes: keep local
+data/04_auth_users.sql

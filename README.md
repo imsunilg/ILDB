@@ -19,3 +19,14 @@ $env:PGPASSWORD = "<password>"      # never saved in a file
 `ILPORTAL_ENV=Production` skips `08_demo_users.sql`; `ILPORTAL_DB` overrides the database name.
 
 Demo accounts: admin/Admin@123, agent/Agent@123, underwriter/Underwriter@123, manager/Manager@123, customer/Customer@123.
+
+## Data export (current database contents)
+`data/0*.sql` are `INSERT` scripts for the data currently in the database (`pg_dump --column-inserts --on-conflict-do-nothing`), in dependency order: countries, products, roles/permissions, users, customers, quotes (token tables and the audit log are not exported).
+
+    $env:PGPASSWORD = '<password>'
+    ./run_all.ps1        # schema (+ seed); use ILPORTAL_ENV=Production to skip demo users
+    ./load_data.ps1      # loads data/*.sql; safe to re-run
+
+`data/04_auth_users.sql` contains password hashes, so it is git-ignored and stays on this machine. Re-create it with:
+
+    pg_dump -h localhost -U postgres -d ILPortal --data-only --column-inserts --on-conflict-do-nothing -t auth.users -t auth.user_roles -f data/04_auth_users.sql
