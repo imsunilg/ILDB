@@ -1,0 +1,9 @@
+# secrets (the database password is only ever read from PGPASSWORD)
+.env
+*.local.json
+
+# logs / OS / IDE
+*.log
+.DS_Store
+Thumbs.db
+.idea/
